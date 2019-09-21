@@ -1,3 +1,4 @@
 {
-	"mongoURI": "mongodb+srv://lauren123:lauren123@greenhealer-tnpbs.mongodb.net/test?retryWrites=true&w=majority"
+	"mongoURI": "mongodb+srv://lauren123:lauren123@greenhealer-tnpbs.mongodb.net/test?retryWrites=true&w=majority",
+	"jwtSecret": "mySecretToken"
 }
