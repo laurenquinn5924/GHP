@@ -37,12 +37,12 @@ async (req, res) => {
 	const errors = validationResult(req);
 	//if there are errors
 	if(!errors.isEmpty()) {
-		return res.status(400).json({ errors: errors.array() })
+		return res.status(400).json({ errors: errors.array() });
 	} 
 
 	const { email, password } = req.body;
 
-	//***** Anything that returns a promise need await in front of it
+	//***** Anything that returns a promise needs await in front of it
 	//Check for the user, if not want to send back an error
 	try {
 		let user = await User.findOne({ email });
