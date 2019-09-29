@@ -1,9 +1,12 @@
-import React, { Fragment, useState } from 'react'
+import React, { Fragment, useState } from 'react';
+import { connect } from 'react-redux'; //When using connect, it also has to be exported at the bottom
 import { Link } from 'react-router-dom';
+import { setAlert } from '../../actions/alert'; //When you want to use an action you have to pass it into connect as paramaters in export, lets us access props.setAlert
+import PropTypes from 'prop-types'
 
 //import axios from 'axios';
 
-const Register = () => {
+const Register = ({ setAlert }) => {
 	const [formData, setFormData] = useState({
 		name: '',
 		email: '',
@@ -20,7 +23,7 @@ const Register = () => {
 	const onSubmit = async e => {
 		e.preventDefault();
 		if(password !== password2) {
-			console.log('Passwords do not match')
+			setAlert('Passwords do not match', 'danger')
 		} else {
 			//Code below would allow us to save to the DB from the component, used as a test before adding redux
 			/*const newUser = {
@@ -100,7 +103,10 @@ const Register = () => {
         Already have an account? <Link to='/login'>Sign In</Link>
       </p>
 		</Fragment>
-	)
-}
+	);
+};
 
-export default Register
+Register.propTypes = {
+	setAlert: PropTypes.func.isRequired
+};
+export default connect(null, { setAlert })(Register); 
