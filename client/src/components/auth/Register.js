@@ -1,13 +1,13 @@
 import React, { Fragment, useState } from 'react';
 import { connect } from 'react-redux'; //When using connect, it also has to be exported at the bottom
-import { Link } from 'react-router-dom';
+import { Link, Redirect } from 'react-router-dom';
 import { setAlert } from '../../actions/alert'; //When you want to use an action you have to pass it into connect as paramaters in export, lets us access props.setAlert
 import { register } from '../../actions/auth';
 import PropTypes from 'prop-types'
 
 //import axios from 'axios';
 
-const Register = ({ setAlert, register }) => {
+const Register = ({ setAlert, register, isAuthenticated }) => {
 	const [formData, setFormData] = useState({
 		name: '',
 		email: '',
@@ -49,6 +49,11 @@ const Register = ({ setAlert, register }) => {
 				console.error(err.response.data);
 			}*/
 		}
+	}
+
+	//Redirect if logged in
+	if(isAuthenticated) {
+		return <Redirect to="/dashboard" />
 	}
 
 	return (
@@ -113,10 +118,15 @@ const Register = ({ setAlert, register }) => {
 
 Register.propTypes = {
 	setAlert: PropTypes.func.isRequired,
-	register: PropTypes.func.isRequired
+	register: PropTypes.func.isRequired,
+	isAuthenticated: PropTypes.bool
 };
 
+const mapStateToProps = state => ({
+	isAuthenticated: state.auth.isAuthenticated
+});
 
-export default connect(null, { setAlert, register })(Register); 
+
+export default connect(mapStateToProps, { setAlert, register })(Register); 
 
 

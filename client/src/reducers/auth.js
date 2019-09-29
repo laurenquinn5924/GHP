@@ -2,7 +2,10 @@ import {
 	REGISTER_SUCCESS,
 	REGISTER_FAIL,
 	USER_LOADED,
-	AUTH_ERROR
+	AUTH_ERROR,
+	LOGIN_FAIL,
+	LOGIN_SUCCESS,
+	LOGOUT
 } from '../actions/types';
 
 const initialState = {
@@ -24,6 +27,7 @@ export default function(state = initialState, action) {
 				user: payload //name, email, avatar all conatined in the payload. Does not contain password b/c backend route removes password
 			};
 		case REGISTER_SUCCESS:
+		case LOGIN_SUCCESS:
 			localStorage.setItem('token', payload.token); //fetching/get back token above in initialState and put token in localStorage. payload is an object
 			return {
 				...state,
@@ -34,6 +38,8 @@ export default function(state = initialState, action) {
 			
 		case REGISTER_FAIL:
 		case AUTH_ERROR:
+		case LOGIN_FAIL:
+		case LOGOUT:
 			localStorage.removeItem('token');
 			return {
 				...state,

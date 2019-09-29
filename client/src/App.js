@@ -12,7 +12,6 @@ import store from './store';
 import { loadUser } from './actions/auth';
 import setAuthToken from './utils/setAuthToken';
 
-
 import './App.css';
 
 //In actions/auth.js this auth only runs the first time a user is loaded, want it to run each time user is loaded so that's why it's in App.js
