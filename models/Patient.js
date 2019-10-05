@@ -31,26 +31,36 @@ const PatientSchema = new mongoose.Schema({
 				type: String
 			},
 			productName: {
-				type: String
+				type: String,
+				required: true
+			},
+			consumptionMethod: {
+				type: String,
+				required: true
 			},
 			brand: {
+				type: String,
+				required: true
+			},
+			thc: {
+				type: String,
+				required: true
+			},
+			cbd: {
+				type: String,
+				required: true
+			},
+			terpenes: {
 				type: String
 			},
-			productProperties: [
-				{
-					thc: {
-						type: Number
-					},
-					cbd: {
-						type: Number
-					},
-					terpenes: {
-						type: String
-					}
-				}
-			],
 			effects: {
+				type: [String]
+			},
+			notes: {
 				type: String
+			},
+			frequency: {
+				type: String,
 			}
 		}
 	]
