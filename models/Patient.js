@@ -9,10 +9,20 @@ const PatientSchema = new mongoose.Schema({
 		type: String,
 		required: true
 	},
+	email: {
+		type: String
+	},
 	dateOfBirth: {
 		type: Date
 	},
 	phoneNumber: {
+		type: String
+	},
+	medicalConditions: {
+		type: [String],
+		required: true
+	},
+	notes: {
 		type: String
 	},
 	product: [
