@@ -47,10 +47,7 @@ router.post('/', [ auth,
 		if(medicalConditions) {
 			patientFields.medicalConditions = medicalConditions.split(',').map(medicalCondition => medicalCondition.trim());
 		}
-		// console.log(patientFields.medicalConditions)
-		// console.log(req.body)
-
-		// res.send(req.body)
+		
 		try {
 			let patient = await Patient.findOne({ user: req.user.id }) //req.user.id comes from the token
 			if(patient) {

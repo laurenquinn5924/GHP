@@ -83,7 +83,7 @@ router.post('/', [ auth,
 		if(instagram) profileFields.social.instagram = instagram;
 
 		try {
-			let profile = await Profile.findOne({ user: req.user.id })
+			let profile = await Profile.findOne({ user: req.user.id }) //req.user.id comes from the token
 
 			if(profile) {//If profile exists, update profile
 				profile = await Profile.findOneAndUpdate(
