@@ -27,7 +27,11 @@ async (req, res) => {
 		return res.status(400).json({ errors: errors.array() })
 	} 
 
-	const { name, email, password } = req.body;
+	const { 
+		name, 
+		email, 
+		password 
+	} = req.body;
 
 	//***** Anything that returns a promise need await in front of it
 	try {
@@ -44,7 +48,7 @@ async (req, res) => {
 			d: 'mm'
 		})
 
-		//Creates new instance of User, does not save to db
+		//Creates new instance of User, does not save to db yet
 		user = new User({
 			name,
 			email,
@@ -57,6 +61,7 @@ async (req, res) => {
 
 		user.password = await bcrypt.hash(password, salt);
 
+		//Saves user to db
 		await user.save();
 
 		//Return json webtoken

@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const ProductSchema = new mongoose.Schema({
+	//Each product should be associaled with a patient
 	patient: {
 		type: mongoose.Schema.Types.ObjectId,
 		ref: 'patient'
@@ -40,4 +41,6 @@ const ProductSchema = new mongoose.Schema({
 	frequency: {
 		type: String,
 	}	
-})
+});
+
+module.exports = Product = mongoose.model('product', ProductSchema);

@@ -4,12 +4,11 @@ const auth = require('../../middleware/auth')
 const { check, validationResult } = require('express-validator');
 
 const Patient = require('../../models/Patient');
-const User = require('../../models/User');
 
-
+/*Working Route 10/9/19 LQH*/
 //@route   POST api/patients
 //@desc    Create or update a patient profile
-//@access  Private
+//@access  Private, patient information
 router.post('/', [ auth,
 	check('firstName', 'First Name is required')
 		.not()
@@ -38,7 +37,6 @@ router.post('/', [ auth,
 
 		//Build patient object
 		const patientFields = {}
-		patientFields.user = req.user.id;
 		if(firstName) patientFields.firstName = firstName;
 		if(lastName) patientFields.lastName = lastName;
 		if(dateOfBirth) patientFields.dateOfBirth = dateOfBirth;
@@ -49,15 +47,16 @@ router.post('/', [ auth,
 		}
 		
 		try {
-			let patient = await Patient.findOne({ user: req.user.id }) //req.user.id comes from the token
-			if(patient) {
-				//Update
-				patient = await Patient.findOneAndUpdate( 
-					{ user: req.user.id }, 
-					{ $set: patientFields },
-					{ new: true } 
+			let patient = await Patient.findById(req.body.patient_id)
+			if(patient) {//If profile exists, update profile
+				patient = await Patient.findOneAndUpdate(
+					console.log('In update'),
+					{ patient: req.body.patient_id }, 
+					{ $set: profileFields }, 
+					{ new: true }
 				);
-				return res.json(patient);
+			
+				return res.json(profile)
 			}
 
 			patient = new Patient(patientFields);
@@ -72,23 +71,11 @@ router.post('/', [ auth,
 	}
 );
 
-//@route   GET api/patients
-//@desc    Get all profiles
-//@access  Public
-router.get('/', async (req,res) => {
-	try {
-		const patients = await Patient.find();
-		res.json(patients)
-	} catch (err) {
-		console.error(err.message);
-		res.status(500).send('Server Error in Get All Patients')
-	}
-});
-
+/*Working Route 10/9/19 LQH*/
 //@route   GET api/patients
 //@desc    Get all patients
-//@access  Public
-router.get('/', async (req,res) => {
+//@access  Private, patient information
+router.get('/', auth, async (req,res) => {
 	try {
 		const patients = await Patient.find();
 		res.json(patients)
@@ -98,23 +85,23 @@ router.get('/', async (req,res) => {
 	}
 });
 
-//@route   GET api/patients/:_id
+/*Working Route 10/9/19 LQH*/
+//@route   GET api/patients/:patient_id
 //@desc    Get patient by ID
-//@access  Public
-router.get('/:_id', async (req, res) => {
+//@access  Private, patient information
+router.get('/:patient_id', auth, async (req, res) => {
 try {
-	const patient = await Patient.findOne({ patient: req.params.id });
+	const patient = await Patient.findById(req.params.patient_id);
 
 	if(!patient) {
 		return res.status(400).json({ msg: "This patient does not exist." });
 	}
-
 	res.json(patient)
 } 
 catch (err) {
 	console.error(err.message);
 	if(err.kind == 'ObjectId') {
-			return res.status(400).json({ msg: 'Profile not found, profile.js' })
+			return res.status(400).json({ msg: 'Patient not found get patient by id, patient.js' })
 		}
 	res.json(500).send({ msg: 'Server Error in get patient by user ID' })
 	}
@@ -122,11 +109,11 @@ catch (err) {
 
 //@route   DELETE api/patients/:_id
 //@desc    Delete patient
-//@access  Private
-router.delete('/:_id', auth, async (req,res) => {
+//@access  Private, patient information
+router.delete('/', auth, async (req,res) => {
 	try {
 		//Remove patient
-		await Patient.findOneAndRemove({ patient: req.params.id });
+		await Patient.findOneAndRemove(req.params.patient_id);
 		//Return a message
 		res.json({ msg: 'Patient deleted' })
 	} 
@@ -136,76 +123,49 @@ router.delete('/:_id', auth, async (req,res) => {
 	}
 });
 
-//@route   PUT api/patients/product
-//@desc    Add product to patient profile
-//@access  Private
-router.put('/product', [
-	auth,
-		[ 
-			check('productName', 'Must include name of product.')
-				.not()
-				.isEmpty(),
-			check('brand', 'Must include brand or farm name.')
-				.not()
-				.isEmpty(),
-			check('thc', 'List amount of THC.')
-				.not()
-				.isEmpty(),
-			check('cbd', 'List amount of CBD')
-				.not()
-				.isEmpty(),
-			check('consumptionMethod', 'Must include how cannabis is being comsumed')
-				.not()
-				.isEmpty()
-		]
-	],
-	async (req,res) => {
-		const errors = validationResult(req);
-		if(!errors) {
-			return res.status(400).json({ errors: errors.array });
+//@route   PUT api/patients/:patient_id
+//@desc    Update patient information
+//@access  Private, patient information
+router.put('/:patient_id', async (req,res) => {
+	try {
+		let patient = await Patient.findById(req.params.patient_id); 
+		
+		if(patient) {
+			patient = await Patient.findOneAndUpdate(req.params.patient_id, 
+				{ 
+					firstName: req.body.firstName,
+					lastName: req.body.lastName,
+					dateOfBirth: req.body.dateOfBirth,
+					phoneNumber: req.body.phoneNumber,
+					email: req.body.email,
+					medicalConditions: req.body.medicalConditions 
+				}
+			);
+			console.log(patient_id)
+			return res.json(patient);	
 		}
-
-		const {
-			symptom,
-			productName,
-			consumptionMethod,
-			brand,
-			thc,
-			cbd,
-			terpenes,
-			effects,
-			notes,
-			frequency
-		} = req.body;
-
-		const newProduct = {
-			symptom,
-			productName,
-			consumptionMethod,
-			brand,
-			thc,
-			cbd,
-			terpenes,
-			effects,
-			notes,
-			frequency
-		}
-
-		try {
-			const patient = await Patient.findOne({ patient: req.params.id });
-
-			patient.product.unshift(newProduct);
-
-			await patient.save();
-
-			res.json(patient);
+		// patient = await Patient.findOneAndUpdate(
+		// 		{ patient: req.params.patient_id },
+		// 		{ 
+		// 			firstName: req.body.firstName,
+		// 			lastName: req.body.lastName,
+		// 			dateOfBirth: req.body.dateOfBirth,
+		// 			phoneNumber: req.body.phoneNumber,
+		// 			email: req.body.email,
+		// 			medicalConditions: req.body.medicalConditions 
+		// 		}
+		// 		//,{ new: true }
+		// 	)
+	
+			//Update
 			
-		} catch (err) {
-			console.error(err.message)
-			return res.status(500).send('Server Error add product')
-		}
-
+		//}	
+		
+	} 
+	catch (err) {
+		console.error(err.message);
+		res.status(500).send('Server Error in update patient info')
 	}
-)
+});
 
 module.exports = router;
