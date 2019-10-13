@@ -47,18 +47,6 @@ router.post('/', [ auth,
 		}
 		
 		try {
-			let patient = await Patient.findById(req.body.patient_id)
-			if(patient) {//If profile exists, update profile
-				patient = await Patient.findOneAndUpdate(
-					console.log('In update'),
-					{ patient: req.body.patient_id }, 
-					{ $set: profileFields }, 
-					{ new: true }
-				);
-			
-				return res.json(profile)
-			}
-
 			patient = new Patient(patientFields);
 
 			await patient.save();
