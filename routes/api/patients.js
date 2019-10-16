@@ -94,23 +94,7 @@ catch (err) {
 	}
 });
 
-//@route   DELETE api/patients/:_id
-//@desc    Delete patient
-//@access  Private, patient information
-router.delete('/:patient_id', async (req,res) => {
-	try {
-		console.log(req.params.patient_id)
-		//Remove patient
-		await Patient.findOneAndRemove(req.params._id);
-		//Return a message
-		res.json({ msg: 'Patient deleted' })
-	} 
-	catch (err) {
-		console.error(err.message);
-		res.status(500).send('Server Error in Delete Patient')
-	}
-});
-
+/*Working Route 10/15/19 LQH*/
 //@route   PUT api/patients/:patient_id
 //@desc    Update patient information
 //@access  Private, patient information
@@ -137,6 +121,27 @@ router.put('/:patient_id', auth, async (req,res) => {
 	catch (err) {
 		console.error(err.message);
 		res.status(500).send('Server Error in update patient info')
+	}
+});
+
+/*Working Route 10/15/19 LQH*/
+//@route   DELETE api/patients/:_id
+//@desc    Delete patient
+//@access  Private, patient information
+router.delete('/:patient_id', auth, async (req,res) => {
+	try {
+		//Remove patient
+		let patient = await Patient.findByIdAndRemove(req.params.patient_id, req.body);
+
+		if(!patient) {
+			return res.status(400).json({ msg: 'This patient does not exist.' });
+		}
+		//Return a message
+		res.json({ msg: 'Patient deleted' })
+	} 
+	catch (err) {
+		console.error(err.message);
+		res.status(500).send('Server Error in Delete Patient')
 	}
 });
 
