@@ -7,7 +7,7 @@ const Patient = require('../../models/Patient');
 
 /*Working Route 10/9/19 LQH*/
 //@route   POST api/patients
-//@desc    Create or update a patient profile
+//@desc    Create patient profile
 //@access  Private, patient information
 router.post('/', [ auth,
 	check('firstName', 'First Name is required')
@@ -48,7 +48,6 @@ router.post('/', [ auth,
 		
 		try {
 			patient = new Patient(patientFields);
-
 			await patient.save();
 			res.json(patient)
 		} 
@@ -98,10 +97,11 @@ catch (err) {
 //@route   DELETE api/patients/:_id
 //@desc    Delete patient
 //@access  Private, patient information
-router.delete('/', auth, async (req,res) => {
+router.delete('/:patient_id', async (req,res) => {
 	try {
+		console.log(req.params.patient_id)
 		//Remove patient
-		await Patient.findOneAndRemove(req.params.patient_id);
+		await Patient.findOneAndRemove(req.params._id);
 		//Return a message
 		res.json({ msg: 'Patient deleted' })
 	} 
@@ -114,41 +114,25 @@ router.delete('/', auth, async (req,res) => {
 //@route   PUT api/patients/:patient_id
 //@desc    Update patient information
 //@access  Private, patient information
-router.put('/:patient_id', async (req,res) => {
+router.put('/:patient_id', auth, async (req,res) => {
 	try {
-		let patient = await Patient.findById(req.params.patient_id); 
+		let patient = await Patient.findByIdAndUpdate(
+			req.params.patient_id,
+			{ 
+				firstName: req.body.firstName,
+				lastName: req.body.lastName,
+				dateOfBirth: req.body.dateOfBirth,
+				phoneNumber: req.body.phoneNumber,
+				email: req.body.email,
+				medicalConditions: req.body.medicalConditions 
+			},
+			{ new: true }	
+		); 
 		
-		if(patient) {
-			patient = await Patient.findOneAndUpdate(req.params.patient_id, 
-				{ 
-					firstName: req.body.firstName,
-					lastName: req.body.lastName,
-					dateOfBirth: req.body.dateOfBirth,
-					phoneNumber: req.body.phoneNumber,
-					email: req.body.email,
-					medicalConditions: req.body.medicalConditions 
-				}
-			);
-			console.log(patient_id)
-			return res.json(patient);	
+		if(!patient) {
+			 return res.status(400).json({ msg: 'This patient does not exist.' });
 		}
-		// patient = await Patient.findOneAndUpdate(
-		// 		{ patient: req.params.patient_id },
-		// 		{ 
-		// 			firstName: req.body.firstName,
-		// 			lastName: req.body.lastName,
-		// 			dateOfBirth: req.body.dateOfBirth,
-		// 			phoneNumber: req.body.phoneNumber,
-		// 			email: req.body.email,
-		// 			medicalConditions: req.body.medicalConditions 
-		// 		}
-		// 		//,{ new: true }
-		// 	)
-	
-			//Update
-			
-		//}	
-		
+		return res.json(patient);	
 	} 
 	catch (err) {
 		console.error(err.message);
