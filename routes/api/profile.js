@@ -32,13 +32,17 @@ router.get('/me', auth, async (req, res) => {
 //@desc    Create or update a user profile
 //@access  Private
 //Need auth and validation middleware, send in route as an array of middleware
-router.post('/', [ auth, 
-	check('status', 'Status is required')
-		.not()
-		.isEmpty(),
-	check('skills', 'Skills are required')
-		.not()
-		.isEmpty()
+router.post('/', 
+	[ 
+		auth, 
+		[
+			check('status', 'Status is required')
+				.not()
+				.isEmpty(),
+			check('skills', 'Skills are required')
+				.not()
+				.isEmpty()
+		]
 	], 
 	async (req,res) => {
 		const errors = validationResult(req);

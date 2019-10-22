@@ -6,10 +6,11 @@ const { check, validationResult } = require('express-validator');
 const Product = require('../../models/Product');
 const Patient = require('../../models/Patient');
 
-//@route   PUT api/patients/product
-//@desc    Add product to patient profile
+/*Working Route 10/21/19 LQH */
+//@route   POST api/product
+//@desc    Create or update product on patient profile
 //@access  Private
-router.put('/product', [
+router.post('/', [
 	auth,
 		[ 
 			check('productName', 'Must include name of product.')
@@ -18,25 +19,22 @@ router.put('/product', [
 			check('brand', 'Must include brand or farm name.')
 				.not()
 				.isEmpty(),
-			check('thc', 'List amount of THC.')
+			check('consumptionMethod', 'Must include how cannabis is being consumed')
 				.not()
 				.isEmpty(),
-			check('cbd', 'List amount of CBD')
-				.not()
-				.isEmpty(),
-			check('consumptionMethod', 'Must include how cannabis is being comsumed')
+			check('frequency', 'How often is this product used by the patient?')
 				.not()
 				.isEmpty()
 		]
 	],
 	async (req,res) => {
 		const errors = validationResult(req);
-		if(!errors) {
-			return res.status(400).json({ errors: errors.array });
+		if(!errors.isEmpty()) {
+			return res.status(400).json({ errors: errors.array() });
 		}
 
 		const {
-			symptom,
+			symptoms,
 			productName,
 			consumptionMethod,
 			brand,
@@ -48,34 +46,134 @@ router.put('/product', [
 			frequency
 		} = req.body;
 
-		const newProduct = {
-			symptom,
-			productName,
-			consumptionMethod,
-			brand,
-			thc,
-			cbd,
-			terpenes,
-			effects,
-			notes,
-			frequency
+		const productFields = {}
+		productFields.patient = req.body.patient_id;
+		if (productName) productFields.productName = productName;
+		if (consumptionMethod) productFields.consumptionMethod = consumptionMethod;
+		if (brand) productFields.brand = brand;
+		if (thc) productFields.thc = thc;
+		if (cbd) productFields.cbd = cbd;
+		if (terpenes) productFields.terpenes = terpenes;
+		if (effects) productFields.effects = effects;
+		if (notes) productFields.notes = notes;
+		if (frequency) productFields.frequency = frequency;
+		if (symptoms) {
+			productFields.symptoms = symptoms.split(',').map(symptom => symptom.trim());
 		}
 
 		try {
-			const patient = await Patient.findOne({ patient: req.params.id });
-
-			patient.product.unshift(newProduct);
-
-			await patient.save();
-
-			res.json(patient);
-			
-		} catch (err) {
-			console.error(err.message)
-			return res.status(500).send('Server Error add product')
+			product = new Product(productFields);
+			await product.save();
+			res.json(product)
 		}
-
+		catch(err) {
+			console.error(err.message);
+			res.status(500).send('Server Error in Create product');
+		}
 	}
-)
+);
+
+/*Working Route 10/21/19 LQH */
+//@route   GET api/product
+//@desc    Get all products
+//@access  Private
+router.get('/', auth, async(req,res) => {
+	try {
+		const products = await Product.find();
+		res.json(products)
+	}
+	catch(err) {
+		console.error(err.message);
+		res.status(500).send('Server Error in Get All Products')
+	}
+});
+
+/*Working Route 10/21/19 LQH */
+//@route   GET api/product/patient/:patient_id
+//@desc    Get all products attached to Patient ID
+//@access  Private
+router.get('/patient/:patient_id', auth, async (req,res) => {
+	try {
+		const product = await Product.find({ patient: req.params.patient_id }).populate('patient');
+
+		if(!product) {
+			return res.status(400).json({ msg: 'There are not any products associated with this user' });
+		}
+		res.json(product)
+	}
+	catch(err) {
+		console.error(err.message);
+		if(err.kind == 'ObjectId') {
+			return res.status(400).json({ msg: 'Patient not found' });
+		}
+		return res.status(500).send('Server Error Get Products by Patient ID');
+	}
+});
+
+/*Working Route 10/21/19 LQH */
+//@route   DELETE api/product/:product_id
+//@desc    Delete Product
+//@access  Private
+router.delete('/:product_id', auth, async (req,res) => {
+	try {
+		let product = await Product.findByIdAndRemove(req.params.product_id, req.body);
+		if(!product) {
+			return res.status(400).json({ msg: 'This product does not exist.' })
+		}
+		
+		res.json({ msg: 'Product Deleted.' })
+	} catch (err) {
+		console.error(err.message)
+		return res.status(500).send('Server Error in Delete Product')
+	}
+});
+
+//@route   PUT api/product/
+//@desc    Update Product
+//@access  Private
+router.put('/:product_id', async (req,res) => {
+	try {
+		let product = await Product.findByIdAndUpdate(
+			req.params.product_id,
+			{
+				symptoms: req.body.symptoms,
+				productName: req.body.productName,
+				consumptionMethod: req.body.consumptionMethod,
+				brand: req.body.brand,
+				thc: req.body.thc,
+				cbd: req.body.cbd,
+				terpenes: req.body.terpenes,
+				effects: req.body.effects,
+				notes: req.body.notes,
+				frequency: req.body.frequency
+			},
+			//{runValidators: true},
+			{ new: true }
+			
+		);
+
+		if(!product) {
+			return res.status(400).json({ msg: 'This product does not exist' })
+		}
+		return res.json(product)
+	} 
+	catch (err) {
+		console.error(err.message);
+		res.status(500).send('Server Error in Update Product')
+	}
+});
+
+/* 
+let product = await Product.findOne({ patient: req.body._id }) 
+	if(product) {//If product exists, update product
+				product = await Product.findOneAndUpdate(
+					{ patient: req.patient.id }, 
+					{ $set: productFields }, 
+					{ new: true }
+				);
+			
+				return res.json(product)
+			}
+*/
 
 module.exports = router;

@@ -6,7 +6,7 @@ const ProductSchema = new mongoose.Schema({
 		type: mongoose.Schema.Types.ObjectId,
 		ref: 'patient'
 	},
-	symptom: {
+	symptoms: {
 		type: String
 	},
 	productName: {
@@ -22,12 +22,10 @@ const ProductSchema = new mongoose.Schema({
 		required: true
 	},
 	thc: {
-		type: String,
-		required: true
+		type: String
 	},
 	cbd: {
-		type: String,
-		required: true
+		type: String
 	},
 	terpenes: {
 		type: String
@@ -40,6 +38,7 @@ const ProductSchema = new mongoose.Schema({
 	},
 	frequency: {
 		type: String,
+		required: true
 	}	
 });
 
