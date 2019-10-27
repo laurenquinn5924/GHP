@@ -7,7 +7,7 @@ const ProductSchema = new mongoose.Schema({
 		ref: 'patient'
 	},
 	symptoms: {
-		type: String
+		type: [String]
 	},
 	productName: {
 		type: String,

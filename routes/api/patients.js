@@ -102,24 +102,20 @@ router.put('/:patient_id', auth, async (req,res) => {
 	try {
 		let patient = await Patient.findByIdAndUpdate(
 			req.params.patient_id,
-			{ 
-				firstName: req.body.firstName,
-				lastName: req.body.lastName,
-				dateOfBirth: req.body.dateOfBirth,
-				phoneNumber: req.body.phoneNumber,
-				email: req.body.email,
-				medicalConditions: req.body.medicalConditions 
-			},
+			{ $set: req.body },
 			{ new: true }	
 		); 
 		
-		if(!patient) {
+		if(patient) {
 			 return res.status(400).json({ msg: 'This patient does not exist.' });
 		}
 		return res.json(patient);	
 	} 
 	catch (err) {
 		console.error(err.message);
+		if(err.kind == 'ObjectId') {
+			return res.status(400).json({ msg: 'Profile not found, profile.js' })
+		}
 		res.status(500).send('Server Error in update patient info')
 	}
 });

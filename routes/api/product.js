@@ -54,13 +54,15 @@ router.post('/', [
 		if (thc) productFields.thc = thc;
 		if (cbd) productFields.cbd = cbd;
 		if (terpenes) productFields.terpenes = terpenes;
-		if (effects) productFields.effects = effects;
 		if (notes) productFields.notes = notes;
 		if (frequency) productFields.frequency = frequency;
+		if (effects) {
+			productFields.effects = effects.split(',').map(effect => effect.trim());
+		}
 		if (symptoms) {
 			productFields.symptoms = symptoms.split(',').map(symptom => symptom.trim());
 		}
-
+		
 		try {
 			product = new Product(productFields);
 			await product.save();
@@ -128,26 +130,16 @@ router.delete('/:product_id', auth, async (req,res) => {
 	}
 });
 
-//@route   PUT api/product/
+//@route   PUT api/product/:product_id
 //@desc    Update Product
 //@access  Private
-router.put('/:product_id', async (req,res) => {
+router.put('/:product_id', auth, async (req,res) => {
+	
+
 	try {
 		let product = await Product.findByIdAndUpdate(
 			req.params.product_id,
-			{
-				symptoms: req.body.symptoms,
-				productName: req.body.productName,
-				consumptionMethod: req.body.consumptionMethod,
-				brand: req.body.brand,
-				thc: req.body.thc,
-				cbd: req.body.cbd,
-				terpenes: req.body.terpenes,
-				effects: req.body.effects,
-				notes: req.body.notes,
-				frequency: req.body.frequency
-			},
-			//{runValidators: true},
+			{ $set: req.body },
 			{ new: true }
 			
 		);
@@ -155,6 +147,7 @@ router.put('/:product_id', async (req,res) => {
 		if(!product) {
 			return res.status(400).json({ msg: 'This product does not exist' })
 		}
+		await product.save();
 		return res.json(product)
 	} 
 	catch (err) {
