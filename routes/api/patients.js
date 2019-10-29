@@ -18,6 +18,9 @@ router.post('/', [ auth,
 		.isEmpty(),
 	check('medicalConditions', 'Medical Conditions are required')
 		.not()
+		.isEmpty(),
+	check('perferredContactMethod', 'Patient perferred contact method is required.')
+		.not()
 		.isEmpty()
 	], 
 	async (req, res) => {
@@ -32,7 +35,8 @@ router.post('/', [ auth,
 			dateOfBirth,
 			phoneNumber,
 			email,
-			medicalConditions
+			medicalConditions,
+			perferredContactMethod
 		} = req.body
 
 		//Build patient object
@@ -41,6 +45,7 @@ router.post('/', [ auth,
 		if(lastName) patientFields.lastName = lastName;
 		if(dateOfBirth) patientFields.dateOfBirth = dateOfBirth;
 		if(phoneNumber) patientFields.phoneNumber = phoneNumber;
+		if(perferredContactMethod) patientFields.perferredContactMethod = perferredContactMethod;
 		if(email) patientFields.email = email;
 		if(medicalConditions) {
 			patientFields.medicalConditions = medicalConditions.split(',').map(medicalCondition => medicalCondition.trim());
@@ -106,16 +111,13 @@ router.put('/:patient_id', auth, async (req,res) => {
 			{ new: true }	
 		); 
 		
-		if(patient) {
+		if(!patient) {
 			 return res.status(400).json({ msg: 'This patient does not exist.' });
 		}
 		return res.json(patient);	
 	} 
 	catch (err) {
 		console.error(err.message);
-		if(err.kind == 'ObjectId') {
-			return res.status(400).json({ msg: 'Profile not found, profile.js' })
-		}
 		res.status(500).send('Server Error in update patient info')
 	}
 });
@@ -127,7 +129,7 @@ router.put('/:patient_id', auth, async (req,res) => {
 router.delete('/:patient_id', auth, async (req,res) => {
 	try {
 		//Remove patient
-		let patient = await Patient.findByIdAndRemove(req.params.patient_id, req.body);
+		let patient = await Patient.findByIdAndDelete(req.params.patient_id, req.body);
 
 		if(!patient) {
 			return res.status(400).json({ msg: 'This patient does not exist.' });

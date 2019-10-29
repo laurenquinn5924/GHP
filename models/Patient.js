@@ -18,6 +18,10 @@ const PatientSchema = new mongoose.Schema({
 	phoneNumber: {
 		type: String
 	},
+	perferredContactMethod: {
+		type: String,
+		required: true
+	},
 	medicalConditions: {
 		type: [String],
 		required: true

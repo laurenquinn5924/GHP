@@ -116,15 +116,16 @@ router.get('/patient/:patient_id', auth, async (req,res) => {
 //@route   DELETE api/product/:product_id
 //@desc    Delete Product
 //@access  Private
-router.delete('/:product_id', auth, async (req,res) => {
+router.delete('/:product_id', async (req,res) => {
 	try {
-		let product = await Product.findByIdAndRemove(req.params.product_id, req.body);
+		let product = await Product.findByIdAndDelete(req.params.product_id, req.body);
 		if(!product) {
 			return res.status(400).json({ msg: 'This product does not exist.' })
 		}
 		
 		res.json({ msg: 'Product Deleted.' })
-	} catch (err) {
+	} 
+	catch (err) {
 		console.error(err.message)
 		return res.status(500).send('Server Error in Delete Product')
 	}
@@ -155,18 +156,5 @@ router.put('/:product_id', auth, async (req,res) => {
 		res.status(500).send('Server Error in Update Product')
 	}
 });
-
-/* 
-let product = await Product.findOne({ patient: req.body._id }) 
-	if(product) {//If product exists, update product
-				product = await Product.findOneAndUpdate(
-					{ patient: req.patient.id }, 
-					{ $set: productFields }, 
-					{ new: true }
-				);
-			
-				return res.json(product)
-			}
-*/
 
 module.exports = router;
